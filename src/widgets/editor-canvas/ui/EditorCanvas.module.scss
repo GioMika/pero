@@ -1,0 +1,78 @@
+@import '@app/styles/variables.scss';
+
+.container {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $bg-primary;
+    overflow: auto; // Изменено с hidden на auto
+    outline: none;
+
+    &:focus {
+        outline: none;
+    }
+}
+
+.canvas {
+    border: 1px solid $border-primary;
+    cursor: crosshair;
+    display: block; // Добавлено
+
+    &:hover {
+        border-color: $color-primary;
+    }
+}
+
+.info {
+    position: absolute;
+    bottom: $spacing-md;
+    right: $spacing-md;
+    display: flex;
+    gap: $spacing-md;
+    padding: $spacing-sm $spacing-md;
+    background: rgba($bg-secondary, 0.95);
+    border: 1px solid $border-primary;
+    border-radius: $radius-sm;
+    font-size: 12px;
+    color: $text-secondary;
+    backdrop-filter: blur(4px);
+    pointer-events: none; // Добавлено - чтобы не блокировал клики
+
+    span {
+        padding: 0 $spacing-sm;
+        border-right: 1px solid $border-primary;
+
+        &:last-child {
+            border-right: none;
+        }
+    }
+}
+
+.hint {
+    position: absolute;
+    top: $spacing-md;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: $spacing-sm $spacing-md;
+    background: rgba($color-primary, 0.9);
+    border-radius: $radius-sm;
+    font-size: 13px;
+    color: $text-primary;
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease;
+    pointer-events: none; // Добавлено
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}

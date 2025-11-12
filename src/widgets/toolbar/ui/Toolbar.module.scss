@@ -1,0 +1,38 @@
+@import '@app/styles/variables.scss';
+
+.toolbar {
+    width: 220px;
+    height: 100%;
+    background: $bg-secondary;
+    border-right: 1px solid $border-primary;
+    padding: $spacing-md;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+    overflow-y: auto;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+}
+
+.title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: $text-secondary;
+    margin: 0;
+}
+
+.tools {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+
+    button {
+        justify-content: flex-start;
+        width: 100%;
+    }
+}

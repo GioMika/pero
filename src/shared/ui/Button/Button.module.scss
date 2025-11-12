@@ -1,0 +1,82 @@
+@import '@app/styles/variables.scss';
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-sm;
+    border: none;
+    border-radius: $radius-sm;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all $transition-fast;
+    user-select: none;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    &:not(:disabled):hover {
+        transform: translateY(-1px);
+    }
+
+    &:not(:disabled):active {
+        transform: translateY(0);
+    }
+}
+
+// Variants
+.primary {
+    background: $color-primary;
+    color: $text-primary;
+
+    &:hover:not(:disabled) {
+        background: lighten($color-primary, 10%);
+    }
+}
+
+.secondary {
+    background: $bg-secondary;
+    color: $text-primary;
+    border: 1px solid $border-primary;
+
+    &:hover:not(:disabled) {
+        background: $bg-hover;
+    }
+}
+
+.ghost {
+    background: transparent;
+    color: $text-secondary;
+
+    &:hover:not(:disabled) {
+        background: $bg-secondary;
+        color: $text-primary;
+    }
+}
+
+// Sizes
+.sm {
+    padding: $spacing-xs $spacing-sm;
+    font-size: 12px;
+    min-height: 28px;
+}
+
+.md {
+    padding: $spacing-sm $spacing-md;
+    font-size: 14px;
+    min-height: 36px;
+}
+
+.lg {
+    padding: $spacing-md $spacing-lg;
+    font-size: 16px;
+    min-height: 44px;
+}
+
+// Active state
+.active {
+    background: $color-primary;
+    color: $text-primary;
+}

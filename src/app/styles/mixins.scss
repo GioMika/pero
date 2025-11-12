@@ -1,0 +1,58 @@
+@mixin flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@mixin flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+@mixin flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+@mixin absolute-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@mixin scrollbar {
+    &::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: $bg-secondary;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: $border-secondary;
+        border-radius: $radius-sm;
+
+        &:hover {
+            background: $bg-hover;
+        }
+    }
+}
+
+@mixin hover-lift {
+    transition: transform $transition-fast;
+
+    &:hover {
+        transform: translateY(-2px);
+    }
+}
+
+@mixin card {
+    background: $bg-secondary;
+    border: 1px solid $border-primary;
+    border-radius: $radius-md;
+    padding: $spacing-md;
+}

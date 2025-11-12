@@ -1,0 +1,48 @@
+@import '@app/styles/variables.scss';
+
+.page {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: $bg-primary;
+    overflow: hidden;
+}
+
+.header {
+    height: 60px;
+    padding: 0 $spacing-lg;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: $bg-secondary;
+    border-bottom: 1px solid $border-primary;
+}
+
+.title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: $text-primary;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+}
+
+.version {
+    padding: $spacing-xs $spacing-sm;
+    background: $bg-tertiary;
+    border: 1px solid $border-primary;
+    border-radius: $radius-sm;
+    font-size: 12px;
+    color: $text-secondary;
+}
+
+.content {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}

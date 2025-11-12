@@ -1,0 +1,24 @@
+@import './reset.scss';
+@import './variables.scss';
+@import './mixins.scss';
+
+body {
+    background: $bg-primary;
+    color: $text-primary;
+    overflow: hidden;
+}
+
+// Глобальные utility классы
+.text-center {
+    text-align: center;
+}
+
+.text-ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.no-select {
+    user-select: none;
+}

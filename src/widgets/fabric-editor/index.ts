@@ -1,0 +1,1 @@
+export { FabricEditor } from './ui/FabricEditor';
