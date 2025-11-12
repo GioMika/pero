@@ -137,3 +137,42 @@
     font-size: 12px;
     text-align: center;
 }
+
+.pathfinderButtons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.pathfinderBtn {
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: #fff;
+    padding: 8px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+
+    &:hover {
+        background: #3a3a3a;
+        border-color: #00aaff;
+        transform: translateY(-1px);
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+}
+
+.multiInfo {
+    padding: 8px;
+    background: rgba(0, 170, 255, 0.1);
+    border: 1px solid rgba(0, 170, 255, 0.3);
+    border-radius: 4px;
+    color: #00aaff;
+    font-size: 12px;
+    text-align: center;
+}

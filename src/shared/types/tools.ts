@@ -3,6 +3,11 @@ export enum ToolType {
   DIRECT_SELECT = 'direct-select',
   PEN = 'pen',
   CONVERT_ANCHOR = 'convert-anchor',
-  ROTATE = 'rotate', // НОВОЕ
+  ADD_ANCHOR = 'add-anchor',
+  DELETE_ANCHOR = 'delete-anchor',
+  ROTATE = 'rotate',
+  SCALE = 'scale',
+  REFLECT = 'reflect',
+  PATHFINDER = 'pathfinder',
   MOVE = 'move',
 }

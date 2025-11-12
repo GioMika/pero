@@ -1,14 +1,20 @@
 import type { FC } from 'react';
 import { useState, useEffect } from 'react';
 import * as fabric from 'fabric';
+import { PathfinderTool, PathfinderOperation } from '../lib/pathfinderTool';
 import styles from './PropertiesPanel.module.scss';
 
 interface PropertiesPanelProps {
   canvas: fabric.Canvas | null;
   onConvertToPath: () => void;
+  pathfinderTool?: PathfinderTool | null;
 }
 
-export const PropertiesPanel: FC<PropertiesPanelProps> = ({ canvas, onConvertToPath }) => {
+export const PropertiesPanel: FC<PropertiesPanelProps> = ({
+                                                            canvas,
+                                                            onConvertToPath,
+                                                            pathfinderTool
+                                                          }) => {
   const [selectedObject, setSelectedObject] = useState<fabric.Object | null>(null);
   const [fillColor, setFillColor] = useState('#00aaff');
   const [strokeColor, setStrokeColor] = useState('#ffffff');
@@ -42,7 +48,16 @@ export const PropertiesPanel: FC<PropertiesPanelProps> = ({ canvas, onConvertToP
   const handleFillChange = (color: string) => {
     if (canvas && selectedObject) {
       setFillColor(color);
-      selectedObject.set('fill', color);
+
+      if (selectedObject.type?.toLowerCase() === 'activeselection') {
+        const objects = (selectedObject as any)._objects || [];
+        objects.forEach((obj: fabric.Object) => {
+          obj.set('fill', color);
+        });
+      } else {
+        selectedObject.set('fill', color);
+      }
+
       canvas.renderAll();
     }
   };
@@ -50,7 +65,16 @@ export const PropertiesPanel: FC<PropertiesPanelProps> = ({ canvas, onConvertToP
   const handleStrokeChange = (color: string) => {
     if (canvas && selectedObject) {
       setStrokeColor(color);
-      selectedObject.set('stroke', color);
+
+      if (selectedObject.type?.toLowerCase() === 'activeselection') {
+        const objects = (selectedObject as any)._objects || [];
+        objects.forEach((obj: fabric.Object) => {
+          obj.set('stroke', color);
+        });
+      } else {
+        selectedObject.set('stroke', color);
+      }
+
       canvas.renderAll();
     }
   };
@@ -58,10 +82,33 @@ export const PropertiesPanel: FC<PropertiesPanelProps> = ({ canvas, onConvertToP
   const handleStrokeWidthChange = (width: number) => {
     if (canvas && selectedObject) {
       setStrokeWidth(width);
-      selectedObject.set('strokeWidth', width);
+
+      if (selectedObject.type?.toLowerCase() === 'activeselection') {
+        const objects = (selectedObject as any)._objects || [];
+        objects.forEach((obj: fabric.Object) => {
+          obj.set('strokeWidth', width);
+        });
+      } else {
+        selectedObject.set('strokeWidth', width);
+      }
+
       canvas.renderAll();
     }
   };
+
+  const handlePathfinderOperation = (operation: PathfinderOperation) => {
+    if (!pathfinderTool) {
+      alert('Pathfinder tool not available! Please refresh the page.');
+      return;
+    }
+    pathfinderTool.executeOperation(operation);
+  };
+
+  // ИСПРАВЛЕНО: проверка типа через toLowerCase()
+  const selectedType = selectedObject?.type?.toLowerCase() || '';
+  const isMultipleSelection = selectedType === 'activeselection';
+  const objectsCount = isMultipleSelection ? ((selectedObject as any)._objects?.length || 0) : 1;
+  const showPathfinder = isMultipleSelection && objectsCount >= 2;
 
   if (!selectedObject) {
     return (
@@ -75,6 +122,44 @@ export const PropertiesPanel: FC<PropertiesPanelProps> = ({ canvas, onConvertToP
 
   return (
       <div className={styles.panel}>
+        {/* Pathfinder - показываем если 2+ объекта */}
+        {showPathfinder && (
+            <div className={styles.section}>
+              <h3>🔗 Pathfinder ({objectsCount} objects)</h3>
+              <div className={styles.pathfinderButtons}>
+                <button
+                    onClick={() => handlePathfinderOperation(PathfinderOperation.UNITE)}
+                    className={styles.pathfinderBtn}
+                    title="Unite - Combine all shapes into one"
+                >
+                  ⊕ Unite
+                </button>
+                <button
+                    onClick={() => handlePathfinderOperation(PathfinderOperation.SUBTRACT)}
+                    className={styles.pathfinderBtn}
+                    title="Subtract - Remove top shape from bottom"
+                >
+                  ⊖ Subtract
+                </button>
+                <button
+                    onClick={() => handlePathfinderOperation(PathfinderOperation.INTERSECT)}
+                    className={styles.pathfinderBtn}
+                    title="Intersect - Keep only overlapping area"
+                >
+                  ⊗ Intersect
+                </button>
+                <button
+                    onClick={() => handlePathfinderOperation(PathfinderOperation.EXCLUDE)}
+                    className={styles.pathfinderBtn}
+                    title="Exclude - Remove overlapping area"
+                >
+                  ⊘ Exclude
+                </button>
+              </div>
+            </div>
+        )}
+
+        {/* Fill Color */}
         <div className={styles.section}>
           <h3>Fill Color</h3>
           <div className={styles.colorControl}>
@@ -93,6 +178,7 @@ export const PropertiesPanel: FC<PropertiesPanelProps> = ({ canvas, onConvertToP
           </div>
         </div>
 
+        {/* Stroke Color */}
         <div className={styles.section}>
           <h3>Stroke Color</h3>
           <div className={styles.colorControl}>
@@ -105,6 +191,7 @@ export const PropertiesPanel: FC<PropertiesPanelProps> = ({ canvas, onConvertToP
           </div>
         </div>
 
+        {/* Stroke Width */}
         <div className={styles.section}>
           <h3>Stroke Width</h3>
           <input
@@ -118,18 +205,29 @@ export const PropertiesPanel: FC<PropertiesPanelProps> = ({ canvas, onConvertToP
           <span className={styles.value}>{strokeWidth}px</span>
         </div>
 
-        {selectedObject.type !== 'path' && (
+        {/* Convert to Path - только для одного объекта */}
+        {!isMultipleSelection && selectedObject.type !== 'path' && (
             <div className={styles.section}>
               <button onClick={onConvertToPath} className={styles.convertBtn}>
-                🔧 Convert to Path (Edit Points)
+                🔧 Convert to Path
               </button>
             </div>
         )}
 
-        {selectedObject.type === 'path' && (
+        {/* Path Info - только для одного path */}
+        {!isMultipleSelection && selectedObject.type === 'path' && (
             <div className={styles.section}>
               <div className={styles.pathInfo}>
-                ✅ Path mode - You can edit points directly
+                ✅ Path mode - Edit points available
+              </div>
+            </div>
+        )}
+
+        {/* Multiple Selection Info */}
+        {isMultipleSelection && (
+            <div className={styles.section}>
+              <div className={styles.multiInfo}>
+                📦 {objectsCount} objects selected
               </div>
             </div>
         )}

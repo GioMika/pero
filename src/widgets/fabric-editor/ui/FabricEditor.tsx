@@ -11,7 +11,13 @@ import { BezierPenTool } from '../lib/bezierPenTool';
 import { DirectSelectionTool } from '../lib/directSelectionTool';
 import { ConvertAnchorTool } from '../lib/convertAnchorTool';
 import { RotateTool } from '../lib/rotateTool';
+import { ScaleTool } from '../lib/scaleTool';
+import { ReflectTool } from '../lib/reflectTool';
+import { AddAnchorTool } from '../lib/addAnchorTool';
+import { DeleteAnchorTool } from '../lib/deleteAnchorTool';
+import { PathfinderTool } from '../lib/pathfinderTool';
 import styles from './FabricEditor.module.scss';
+
 
 export const FabricEditor: FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -20,6 +26,11 @@ export const FabricEditor: FC = () => {
   const directSelectionToolRef = useRef<DirectSelectionTool | null>(null);
   const convertAnchorToolRef = useRef<ConvertAnchorTool | null>(null);
   const rotateToolRef = useRef<RotateTool | null>(null);
+  const scaleToolRef = useRef<ScaleTool | null>(null);
+  const reflectToolRef = useRef<ReflectTool | null>(null);
+  const addAnchorToolRef = useRef<AddAnchorTool | null>(null);
+  const deleteAnchorToolRef = useRef<DeleteAnchorTool | null>(null);
+  const pathfinderToolRef = useRef<PathfinderTool | null>(null);
   const dispatch = useAppDispatch();
   const editingGlyph = useAppSelector(selectEditingGlyph);
   const canvasState = useAppSelector((state) => state.canvas);
@@ -39,6 +50,13 @@ export const FabricEditor: FC = () => {
     directSelectionToolRef.current = new DirectSelectionTool(canvas);
     convertAnchorToolRef.current = new ConvertAnchorTool(canvas);
     rotateToolRef.current = new RotateTool(canvas);
+    scaleToolRef.current = new ScaleTool(canvas);
+    reflectToolRef.current = new ReflectTool(canvas);
+    addAnchorToolRef.current = new AddAnchorTool(canvas);
+    deleteAnchorToolRef.current = new DeleteAnchorTool(canvas);
+    pathfinderToolRef.current = new PathfinderTool(canvas);
+
+    console.log('✅ All tools initialized, including Pathfinder:', pathfinderToolRef.current);
 
     let isDragging = false;
     let lastPosX = 0;
@@ -64,7 +82,7 @@ export const FabricEditor: FC = () => {
 
     canvas.on('mouse:down', (opt) => {
       const evt = opt.e as MouseEvent;
-      if (evt.shiftKey === true) {
+      if (evt.shiftKey === true && canvasState.activeTool === ToolType.SELECT) {
         isDragging = true;
         canvas.selection = false;
         lastPosX = evt.clientX;
@@ -124,6 +142,21 @@ export const FabricEditor: FC = () => {
       if (rotateToolRef.current) {
         rotateToolRef.current.deactivate();
       }
+      if (scaleToolRef.current) {
+        scaleToolRef.current.deactivate();
+      }
+      if (reflectToolRef.current) {
+        reflectToolRef.current.deactivate();
+      }
+      if (addAnchorToolRef.current) {
+        addAnchorToolRef.current.deactivate();
+      }
+      if (deleteAnchorToolRef.current) {
+        deleteAnchorToolRef.current.deactivate();
+      }
+      if (pathfinderToolRef.current) {
+        pathfinderToolRef.current.deactivate();
+      }
       canvas.dispose();
     };
   }, []);
@@ -171,7 +204,12 @@ export const FabricEditor: FC = () => {
         !penToolRef.current ||
         !directSelectionToolRef.current ||
         !convertAnchorToolRef.current ||
-        !rotateToolRef.current
+        !rotateToolRef.current ||
+        !scaleToolRef.current ||
+        !reflectToolRef.current ||
+        !addAnchorToolRef.current ||
+        !deleteAnchorToolRef.current ||
+        !pathfinderToolRef.current
     ) return;
 
     // Деактивируем все инструменты
@@ -179,6 +217,11 @@ export const FabricEditor: FC = () => {
     directSelectionToolRef.current.deactivate();
     convertAnchorToolRef.current.deactivate();
     rotateToolRef.current.deactivate();
+    scaleToolRef.current.deactivate();
+    reflectToolRef.current.deactivate();
+    addAnchorToolRef.current.deactivate();
+    deleteAnchorToolRef.current.deactivate();
+    pathfinderToolRef.current.deactivate();
     FabricTools.disableDrawingMode(canvas);
 
     // Активируем нужный
@@ -188,8 +231,18 @@ export const FabricEditor: FC = () => {
       directSelectionToolRef.current.activate();
     } else if (canvasState.activeTool === ToolType.CONVERT_ANCHOR) {
       convertAnchorToolRef.current.activate();
+    } else if (canvasState.activeTool === ToolType.ADD_ANCHOR) {
+      addAnchorToolRef.current.activate();
+    } else if (canvasState.activeTool === ToolType.DELETE_ANCHOR) {
+      deleteAnchorToolRef.current.activate();
     } else if (canvasState.activeTool === ToolType.ROTATE) {
       rotateToolRef.current.activate();
+    } else if (canvasState.activeTool === ToolType.SCALE) {
+      scaleToolRef.current.activate();
+    } else if (canvasState.activeTool === ToolType.REFLECT) {
+      reflectToolRef.current.activate();
+    } else if (canvasState.activeTool === ToolType.PATHFINDER) {
+      pathfinderToolRef.current.activate();
     }
   }, [canvasState.activeTool]);
 
@@ -212,15 +265,18 @@ export const FabricEditor: FC = () => {
       if (!canvas) return;
 
       if (e.key === 'Delete' || e.key === 'Backspace') {
-        FabricTools.deleteSelected(canvas);
-        saveCurrentGlyph();
-        e.preventDefault();
+        // Не удаляем если активен Pen Tool (там Backspace для отмены точки)
+        if (canvasState.activeTool !== ToolType.PEN) {
+          FabricTools.deleteSelected(canvas);
+          saveCurrentGlyph();
+          e.preventDefault();
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [editingGlyph]);
+  }, [editingGlyph, canvasState.activeTool]);
 
   const handleAddCircle = () => {
     const canvas = fabricCanvasRef.current;
@@ -303,6 +359,7 @@ export const FabricEditor: FC = () => {
         <PropertiesPanel
             canvas={fabricCanvasRef.current}
             onConvertToPath={handleConvertToPath}
+            pathfinderTool={pathfinderToolRef.current}
         />
 
         <div className={styles.info}>
@@ -315,13 +372,28 @@ export const FabricEditor: FC = () => {
               <span>✏️ Click = point | Click+Drag = curve | Enter = close | Backspace = undo</span>
           )}
           {canvasState.activeTool === ToolType.DIRECT_SELECT && (
-              <span>🎯 Click path to edit points | Drag points & handles | Delete = remove point</span>
+              <span>🎯 Click path to edit | Drag points & handles | Delete = remove point</span>
           )}
           {canvasState.activeTool === ToolType.CONVERT_ANCHOR && (
-              <span>⚡ Click point to convert: 🔵 Smooth ↔ 🟠 Corner</span>
+              <span>⚡ Click point: 🔵 Smooth ↔ 🟠 Corner</span>
+          )}
+          {canvasState.activeTool === ToolType.ADD_ANCHOR && (
+              <span>➕ Click path | Hover preview | Click to add point</span>
+          )}
+          {canvasState.activeTool === ToolType.DELETE_ANCHOR && (
+              <span>➖ Click path | 🔴 Click to delete | ⚪ Gray = min 3 points</span>
           )}
           {canvasState.activeTool === ToolType.ROTATE && (
               <span>🔄 Click & drag to rotate | Shift = snap 15° | ← → = rotate 15°</span>
+          )}
+          {canvasState.activeTool === ToolType.SCALE && (
+              <span>📏 Click & drag to scale | Shift = uniform | ↑ ↓ = scale 10%</span>
+          )}
+          {canvasState.activeTool === ToolType.REFLECT && (
+              <span>🪞 Click object | H = flip horizontal | V = flip vertical</span>
+          )}
+          {canvasState.activeTool === ToolType.PATHFINDER && (
+              <span>🔗 Select 2+ objects | Use Pathfinder buttons in Properties panel</span>
           )}
           {canvasState.activeTool === ToolType.SELECT && (
               <span>👆 Select & edit | Shift+Drag = pan | Scroll = zoom | Delete = remove</span>

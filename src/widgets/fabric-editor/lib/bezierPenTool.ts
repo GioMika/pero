@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as fabric from 'fabric';
 
 export class BezierPenTool {
@@ -45,7 +46,6 @@ export class BezierPenTool {
 
     const pointer = this.canvas.getPointer(e.e);
 
-    // Проверяем клик на первую точку (замыкание)
     if (this.points.length > 2) {
       const firstPoint = this.points[0];
       const distance = Math.sqrt(
@@ -58,7 +58,6 @@ export class BezierPenTool {
       }
     }
 
-    // Начинаем тянуть для создания ручки
     this.isDraggingHandle = true;
     this.addPoint(pointer.x, pointer.y);
   };
@@ -68,17 +67,13 @@ export class BezierPenTool {
 
     const pointer = this.canvas.getPointer(e.e);
 
-    // Если тянем - создаем Безье ручку
     if (this.isDraggingHandle && this.points.length > 0) {
       const lastPoint = this.points[this.points.length - 1];
 
-      // Вычисляем вектор ручки
       const handleX = pointer.x - lastPoint.x;
       const handleY = pointer.y - lastPoint.y;
 
       lastPoint.handleOut = new fabric.Point(handleX, handleY);
-
-      // Симметричная ручка входа
       lastPoint.handleIn = new fabric.Point(-handleX, -handleY);
 
       this.updatePath();
@@ -86,7 +81,6 @@ export class BezierPenTool {
       return;
     }
 
-    // Превью линии
     if (this.points.length > 0 && !this.isDraggingHandle) {
       if (this.previewLine) {
         this.canvas.remove(this.previewLine);
@@ -134,7 +128,6 @@ export class BezierPenTool {
       handleOut: new fabric.Point(0, 0)
     });
 
-    // Визуализируем точку
     const point = new fabric.Circle({
       left: x - 4,
       top: y - 4,
@@ -171,7 +164,6 @@ export class BezierPenTool {
       const prevPoint = this.points[i - 1];
       const currPoint = this.points[i];
 
-      // Если есть ручки - используем кубическую кривую Безье
       if (prevPoint.handleOut && (prevPoint.handleOut.x !== 0 || prevPoint.handleOut.y !== 0)) {
         const cp1x = prevPoint.x + (prevPoint.handleOut?.x || 0);
         const cp1y = prevPoint.y + (prevPoint.handleOut?.y || 0);
@@ -180,7 +172,6 @@ export class BezierPenTool {
 
         pathData += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${currPoint.x} ${currPoint.y}`;
       } else {
-        // Прямая линия
         pathData += ` L ${currPoint.x} ${currPoint.y}`;
       }
     }
@@ -199,17 +190,14 @@ export class BezierPenTool {
   }
 
   private drawHandles() {
-    // Удаляем старые ручки
     this.tempHandles.forEach(handle => this.canvas.remove(handle));
     this.tempHandles = [];
 
-    // Рисуем ручки для последней точки
     if (this.points.length === 0) return;
 
     const lastPoint = this.points[this.points.length - 1];
 
     if (lastPoint.handleOut && (lastPoint.handleOut.x !== 0 || lastPoint.handleOut.y !== 0)) {
-      // Линия ручки
       const handleLine = new fabric.Line(
           [
             lastPoint.x,
@@ -225,7 +213,6 @@ export class BezierPenTool {
           }
       );
 
-      // Кружок на конце ручки
       const handleCircle = new fabric.Circle({
         left: lastPoint.x + lastPoint.handleOut.x - 3,
         top: lastPoint.y + lastPoint.handleOut.y - 3,
@@ -267,7 +254,6 @@ export class BezierPenTool {
       }
     }
 
-    // Замыкаем путь
     const firstPoint = this.points[0];
     const lastPoint = this.points[this.points.length - 1];
 

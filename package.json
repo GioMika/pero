@@ -13,6 +13,7 @@
     "@reduxjs/toolkit": "^2.10.1",
     "clsx": "^2.1.1",
     "fabric": "^6.9.0",
+    "paper": "^0.12.18",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-redux": "^9.2.0"
@@ -21,6 +22,7 @@
     "@eslint/js": "^9.17.0",
     "@types/fabric": "^5.3.10",
     "@types/node": "^22.10.2",
+    "@types/paper": "^0.11.14",
     "@types/react": "^19.0.6",
     "@types/react-dom": "^19.0.2",
     "@vitejs/plugin-react": "^4.3.4",

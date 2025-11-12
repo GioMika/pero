@@ -81,6 +81,43 @@ export const Toolbar: FC = () => {
             >
               🔄 Rotate
             </Button>
+
+            <Button
+                size="sm"
+                variant="ghost"
+                active={activeTool === ToolType.SCALE}
+                onClick={() => dispatch(setActiveTool(ToolType.SCALE))}
+            >
+              📏 Scale
+            </Button>
+
+            <Button
+                size="sm"
+                variant="ghost"
+                active={activeTool === ToolType.REFLECT}
+                onClick={() => dispatch(setActiveTool(ToolType.REFLECT))}
+            >
+              🪞 Reflect
+            </Button>
+
+
+            <Button
+                size="sm"
+                variant="ghost"
+                active={activeTool === ToolType.ADD_ANCHOR}
+                onClick={() => dispatch(setActiveTool(ToolType.ADD_ANCHOR))}
+            >
+              ➕ Add Point
+            </Button>
+
+            <Button
+                size="sm"
+                variant="ghost"
+                active={activeTool === ToolType.DELETE_ANCHOR}
+                onClick={() => dispatch(setActiveTool(ToolType.DELETE_ANCHOR))}
+            >
+              ➖ Delete Point
+            </Button>
           </div>
         </div>
 

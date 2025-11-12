@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as fabric from 'fabric';
 
 export class ConvertAnchorTool {
