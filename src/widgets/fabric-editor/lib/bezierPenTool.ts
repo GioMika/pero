@@ -9,7 +9,6 @@ export class BezierPenTool {
   private tempHandles: fabric.Line[] = [];
   private currentPath: fabric.Path | null = null;
   private isDraggingHandle: boolean = false;
-  private previewLine: fabric.Line | null = null;
 
   constructor(canvas: fabric.Canvas) {
     this.canvas = canvas;
@@ -67,40 +66,26 @@ export class BezierPenTool {
 
     const pointer = this.canvas.getPointer(e.e);
 
+    // Если тянем - создаем Безье ручку
     if (this.isDraggingHandle && this.points.length > 0) {
       const lastPoint = this.points[this.points.length - 1];
 
       const handleX = pointer.x - lastPoint.x;
       const handleY = pointer.y - lastPoint.y;
 
-      lastPoint.handleOut = new fabric.Point(handleX, handleY);
-      lastPoint.handleIn = new fabric.Point(-handleX, -handleY);
+      // Только если действительно тянем (расстояние > 3px)
+      const distance = Math.sqrt(handleX * handleX + handleY * handleY);
 
-      this.updatePath();
-      this.drawHandles();
-      return;
-    }
+      if (distance > 3) {
+        lastPoint.handleOut = new fabric.Point(handleX, handleY);
+        lastPoint.handleIn = new fabric.Point(-handleX, -handleY);
 
-    if (this.points.length > 0 && !this.isDraggingHandle) {
-      if (this.previewLine) {
-        this.canvas.remove(this.previewLine);
+        this.updatePath();
+        this.drawHandles();
       }
-
-      const lastPoint = this.points[this.points.length - 1];
-      this.previewLine = new fabric.Line(
-          [lastPoint.x, lastPoint.y, pointer.x, pointer.y],
-          {
-            stroke: '#00aaff',
-            strokeWidth: 1,
-            strokeDashArray: [5, 5],
-            selectable: false,
-            evented: false,
-          }
-      );
-
-      this.canvas.add(this.previewLine);
-      this.canvas.renderAll();
     }
+
+    // НЕТ БОЛЬШЕ previewLine! ВСЁ!
   };
 
   private handleMouseUp = () => {
@@ -111,10 +96,10 @@ export class BezierPenTool {
     if (!this.isActive) return;
 
     if (e.key === 'Enter') {
-      this.closePath();
+      this.finishPath();
     } else if (e.key === 'Escape') {
       this.cancel();
-    } else if (e.key === 'Backspace' || e.key === 'Delete') {
+    } else if (e.key === 'Backspace') {
       this.removeLastPoint();
       e.preventDefault();
     }
@@ -129,8 +114,8 @@ export class BezierPenTool {
     });
 
     const point = new fabric.Circle({
-      left: x - 4,
-      top: y - 4,
+      left: x,
+      top: y,
       radius: 4,
       fill: '#00aaff',
       stroke: '#ffffff',
@@ -206,7 +191,7 @@ export class BezierPenTool {
             lastPoint.y + lastPoint.handleOut.y
           ],
           {
-            stroke: '#ff6600',
+            stroke: '#00aaff',
             strokeWidth: 1,
             selectable: false,
             evented: false,
@@ -214,10 +199,10 @@ export class BezierPenTool {
       );
 
       const handleCircle = new fabric.Circle({
-        left: lastPoint.x + lastPoint.handleOut.x - 3,
-        top: lastPoint.y + lastPoint.handleOut.y - 3,
+        left: lastPoint.x + lastPoint.handleOut.x,
+        top: lastPoint.y + lastPoint.handleOut.y,
         radius: 3,
-        fill: '#ff6600',
+        fill: '#00aaff',
         stroke: '#ffffff',
         strokeWidth: 1,
         selectable: false,
@@ -289,6 +274,46 @@ export class BezierPenTool {
     this.points = [];
   }
 
+  private finishPath() {
+    if (this.points.length < 2) return;
+
+    let pathData = `M ${this.points[0].x} ${this.points[0].y}`;
+
+    for (let i = 1; i < this.points.length; i++) {
+      const prevPoint = this.points[i - 1];
+      const currPoint = this.points[i];
+
+      if (prevPoint.handleOut && (prevPoint.handleOut.x !== 0 || prevPoint.handleOut.y !== 0)) {
+        const cp1x = prevPoint.x + (prevPoint.handleOut?.x || 0);
+        const cp1y = prevPoint.y + (prevPoint.handleOut?.y || 0);
+        const cp2x = currPoint.x + (currPoint.handleIn?.x || 0);
+        const cp2y = currPoint.y + (currPoint.handleIn?.y || 0);
+
+        pathData += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${currPoint.x} ${currPoint.y}`;
+      } else {
+        pathData += ` L ${currPoint.x} ${currPoint.y}`;
+      }
+    }
+
+    const finalPath = new fabric.Path(pathData, {
+      fill: 'transparent',
+      stroke: '#00aaff',
+      strokeWidth: 2,
+      objectCaching: false,
+      hasBorders: true,
+      hasControls: true,
+      selectable: true,
+      evented: true,
+    });
+
+    this.clearTemp();
+    this.canvas.add(finalPath);
+    this.canvas.setActiveObject(finalPath);
+    this.canvas.renderAll();
+
+    this.points = [];
+  }
+
   private removeLastPoint() {
     if (this.points.length === 0) return;
 
@@ -319,11 +344,6 @@ export class BezierPenTool {
     if (this.currentPath) {
       this.canvas.remove(this.currentPath);
       this.currentPath = null;
-    }
-
-    if (this.previewLine) {
-      this.canvas.remove(this.previewLine);
-      this.previewLine = null;
     }
   }
 }

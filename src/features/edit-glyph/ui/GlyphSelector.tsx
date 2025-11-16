@@ -12,14 +12,16 @@ export const GlyphSelector: FC = () => {
   const editingGlyphId = useAppSelector((state) => state.glyph.editingGlyphId);
 
   const handleCreateGlyph = (unicode: string) => {
-    // Проверяем, есть ли уже глиф с таким unicode
+    // Ищем глиф по unicode
     const existingGlyph = Object.values(allGlyphs).find((g) => g.unicode === unicode);
 
     if (existingGlyph) {
-      // Если есть, просто выбираем его для редактирования
+      // Глиф уже существует - выбираем его
       dispatch(setEditingGlyph(existingGlyph.id));
+      console.log('📝 [GlyphSelector] Selected existing glyph:', unicode, existingGlyph.id);
     } else {
-      // Создаем новый пустой глиф
+      // Глиф не найден - создаем пустой (такого не должно быть если базовый шрифт загружен)
+      console.warn('⚠️ [GlyphSelector] Glyph not found, creating empty:', unicode);
       const newGlyph = GlyphEngine.createEmptyGlyph(unicode, `glyph-${unicode}`);
       dispatch(addGlyph(newGlyph));
       dispatch(setEditingGlyph(newGlyph.id));

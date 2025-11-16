@@ -3,7 +3,7 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import type { GlyphState, Glyph, GlyphPath, Point } from './types';
 
 const initialState: GlyphState = {
-  glyphs: {},
+  glyphs: {}, // Пустой объект - шрифт загружается позже через loadAllGlyphs
   selectedGlyphId: null,
   editingGlyphId: null,
   copiedGlyph: null,
@@ -13,6 +13,12 @@ export const glyphSlice = createSlice({
   name: 'glyph',
   initialState,
   reducers: {
+    // ✨ НОВЫЙ ACTION - Загрузка всех глифов из базового шрифта
+    loadAllGlyphs: (state, action: PayloadAction<Record<string, Glyph>>) => {
+      state.glyphs = action.payload;
+      console.log('📦 [glyphSlice] Loaded', Object.keys(action.payload).length, 'glyphs');
+    },
+
     addGlyph: (state, action: PayloadAction<Glyph>) => {
       state.glyphs[action.payload.id] = action.payload;
     },
@@ -103,6 +109,7 @@ export const glyphSlice = createSlice({
 });
 
 export const {
+  loadAllGlyphs, // ✨ НЕ ЗАБУДЬ ЭКСПОРТИРОВАТЬ
   addGlyph,
   removeGlyph,
   updateGlyphPath,

@@ -43,6 +43,14 @@ export const Toolbar: FC = () => {
             <Button
                 size="sm"
                 variant="ghost"
+                active={activeTool === ToolType.TEXT}
+                onClick={() => dispatch(setActiveTool(ToolType.TEXT))}
+            >
+              🔤 Text
+            </Button>
+            <Button
+                size="sm"
+                variant="ghost"
                 active={activeTool === ToolType.MOVE}
                 onClick={() => dispatch(setActiveTool(ToolType.MOVE))}
             >
@@ -76,6 +84,33 @@ export const Toolbar: FC = () => {
             <Button
                 size="sm"
                 variant="ghost"
+                active={activeTool === ToolType.SMOOTH}
+                onClick={() => dispatch(setActiveTool(ToolType.SMOOTH))}
+            >
+              ⌇ Smooth
+            </Button>
+
+            <Button
+                size="sm"
+                variant="ghost"
+                active={activeTool === ToolType.SIMPLIFY}
+                onClick={() => dispatch(setActiveTool(ToolType.SIMPLIFY))}
+            >
+              📉 Simplify
+            </Button>
+
+            <Button
+                size="sm"
+                variant="ghost"
+                active={activeTool === ToolType.JOIN}
+                onClick={() => dispatch(setActiveTool(ToolType.JOIN))}
+            >
+              🔗 Join
+            </Button>
+
+            <Button
+                size="sm"
+                variant="ghost"
                 active={activeTool === ToolType.ROTATE}
                 onClick={() => dispatch(setActiveTool(ToolType.ROTATE))}
             >
@@ -100,7 +135,6 @@ export const Toolbar: FC = () => {
               🪞 Reflect
             </Button>
 
-
             <Button
                 size="sm"
                 variant="ghost"
@@ -117,6 +151,15 @@ export const Toolbar: FC = () => {
                 onClick={() => dispatch(setActiveTool(ToolType.DELETE_ANCHOR))}
             >
               ➖ Delete Point
+            </Button>
+
+            <Button
+                size="sm"
+                variant="ghost"
+                active={activeTool === ToolType.SCISSORS}
+                onClick={() => dispatch(setActiveTool(ToolType.SCISSORS))}
+            >
+              ✂️ Scissors
             </Button>
           </div>
         </div>

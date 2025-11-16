@@ -104,7 +104,7 @@ export const PropertiesPanel: FC<PropertiesPanelProps> = ({
     pathfinderTool.executeOperation(operation);
   };
 
-  // ИСПРАВЛЕНО: проверка типа через toLowerCase()
+  // Проверка множественного выделения
   const selectedType = selectedObject?.type?.toLowerCase() || '';
   const isMultipleSelection = selectedType === 'activeselection';
   const objectsCount = isMultipleSelection ? ((selectedObject as any)._objects?.length || 0) : 1;
@@ -154,6 +154,27 @@ export const PropertiesPanel: FC<PropertiesPanelProps> = ({
                     title="Exclude - Remove overlapping area"
                 >
                   ⊘ Exclude
+                </button>
+                <button
+                    onClick={() => handlePathfinderOperation(PathfinderOperation.DIVIDE)}
+                    className={styles.pathfinderBtn}
+                    title="Divide - Split into separate parts"
+                >
+                  ✂️ Divide
+                </button>
+                <button
+                    onClick={() => handlePathfinderOperation(PathfinderOperation.TRIM)}
+                    className={styles.pathfinderBtn}
+                    title="Trim - Trim bottom shapes by top"
+                >
+                  ✄ Trim
+                </button>
+                <button
+                    onClick={() => handlePathfinderOperation(PathfinderOperation.MERGE)}
+                    className={styles.pathfinderBtn}
+                    title="Merge - Merge overlapping shapes"
+                >
+                  🔗 Merge
                 </button>
               </div>
             </div>

@@ -103,7 +103,7 @@ export class FabricConverter {
   }
 
   /**
-   * Загружает GlyphPath в Fabric canvas
+   * Загружает GlyphPath в Fabric canvas как РЕДАКТИРУЕМЫЙ PATH
    */
   static glyphPathToFabric(glyphPath: GlyphPath, canvas: fabric.Canvas) {
     FabricConverter.clearCanvas(canvas);
@@ -124,14 +124,23 @@ export class FabricConverter {
 
       const path = new fabric.Path(pathData, {
         fill: 'transparent',
-        stroke: '#00aaff',
+        stroke: '#3B82F6',         // Современный синий
         strokeWidth: 2,
+        objectCaching: false,
+        hasBorders: true,
+        hasControls: true,
+        selectable: true,
+        evented: true,
+        perPixelTargetFind: true,  // Точный клик по пути
       });
 
       canvas.add(path);
+
+      console.log('✅ [FabricConverter] Contour loaded:', contour.points.length, 'points');
     });
 
     canvas.renderAll();
+    console.log('✅ [FabricConverter] All contours rendered');
   }
 
   private static clearCanvas(canvas: fabric.Canvas) {

@@ -30,9 +30,11 @@
 .primary {
     background: $color-primary;
     color: $text-primary;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 
     &:hover:not(:disabled) {
-        background: lighten($color-primary, 10%);
+        background: lighten($color-primary, 8%);
+        box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
     }
 }
 
@@ -43,12 +45,14 @@
 
     &:hover:not(:disabled) {
         background: $bg-hover;
+        border-color: $border-secondary;
     }
 }
 
 .ghost {
     background: transparent;
     color: $text-secondary;
+    border-radius: 6px;
 
     &:hover:not(:disabled) {
         background: $bg-secondary;
@@ -79,4 +83,9 @@
 .active {
     background: $color-primary;
     color: $text-primary;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+    
+    &:hover:not(:disabled) {
+        background: lighten($color-primary, 8%);
+    }
 }

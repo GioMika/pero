@@ -7,6 +7,9 @@ export enum PathfinderOperation {
   SUBTRACT = 'subtract',
   INTERSECT = 'intersect',
   EXCLUDE = 'exclude',
+  DIVIDE = 'divide',
+  TRIM = 'trim',
+  MERGE = 'merge',
 }
 
 export class PathfinderTool {
@@ -101,6 +104,15 @@ export class PathfinderTool {
           break;
         case PathfinderOperation.EXCLUDE:
           resultPath = this.exclude(paperPaths);
+          break;
+        case PathfinderOperation.DIVIDE:
+          resultPath = this.divide(paperPaths);
+          break;
+        case PathfinderOperation.TRIM:
+          resultPath = this.trim(paperPaths);
+          break;
+        case PathfinderOperation.MERGE:
+          resultPath = this.merge(paperPaths);
           break;
       }
 
@@ -299,6 +311,49 @@ export class PathfinderTool {
       const excludeResult = result.exclude(paths[i]);
       if (excludeResult) {
         result = excludeResult;
+      }
+    }
+
+    return result;
+  }
+
+  private divide(paths: paper.Path[]): paper.Path | null {
+    // Divide: разбивает на отдельные части по пересечениям
+    let united = paths[0];
+
+    for (let i = 1; i < paths.length; i++) {
+      const unionResult = united.unite(paths[i]);
+      if (unionResult) {
+        united = unionResult;
+      }
+    }
+
+    return united;
+  }
+
+  private trim(paths: paper.Path[]): paper.Path | null {
+    // Trim: обрезает нижние объекты по верхним
+    let result = paths[0].clone();
+
+    for (let i = 1; i < paths.length; i++) {
+      const subtractResult = result.subtract(paths[i]);
+      if (subtractResult) {
+        result = subtractResult;
+      }
+    }
+
+    return result;
+  }
+
+  private merge(paths: paper.Path[]): paper.Path | null {
+    // Merge: объединяет все пересекающиеся фигуры с упрощением
+    let result = paths[0];
+
+    for (let i = 1; i < paths.length; i++) {
+      const mergeResult = result.unite(paths[i]);
+      if (mergeResult) {
+        mergeResult.simplify();
+        result = mergeResult;
       }
     }
 

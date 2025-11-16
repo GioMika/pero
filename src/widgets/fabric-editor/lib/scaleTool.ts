@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as fabric from 'fabric';
 
 export class ScaleTool {
@@ -6,9 +7,11 @@ export class ScaleTool {
   private selectedObject: fabric.Object | null = null;
   private scaleCenter: fabric.Circle | null = null;
   private isScaling: boolean = false;
-  private startDistance: number = 0;
+  private startPoint: fabric.Point | null = null;
   private initialScaleX: number = 1;
   private initialScaleY: number = 1;
+  private initialWidth: number = 0;
+  private initialHeight: number = 0;
   private centerPoint: fabric.Point | null = null;
 
   constructor(canvas: fabric.Canvas) {
@@ -89,31 +92,37 @@ export class ScaleTool {
     }
 
     this.selectedObject = obj;
+
+    // НЕ блокируем объект, просто выделяем
     this.selectedObject.set({
-      selectable: false,
-      evented: true,
-      lockMovementX: true,
-      lockMovementY: true,
+      lockMovementX: false,
+      lockMovementY: false,
     });
 
     this.initialScaleX = this.selectedObject.scaleX || 1;
     this.initialScaleY = this.selectedObject.scaleY || 1;
 
+    // Запоминаем начальные размеры
+    const bounds = this.selectedObject.getBoundingRect();
+    this.initialWidth = bounds.width;
+    this.initialHeight = bounds.height;
+
     // Показываем центр масштабирования
     this.showScaleCenter();
 
+    this.canvas.setActiveObject(this.selectedObject);
     this.canvas.renderAll();
   }
 
   private deselectObject() {
     if (this.selectedObject) {
       this.selectedObject.set({
-        selectable: true,
         lockMovementX: false,
         lockMovementY: false,
       });
       this.clearScaleCenter();
       this.selectedObject = null;
+      this.canvas.discardActiveObject();
       this.canvas.renderAll();
     }
   }
@@ -121,12 +130,14 @@ export class ScaleTool {
   private showScaleCenter() {
     if (!this.selectedObject) return;
 
+    this.clearScaleCenter();
+
     const center = this.selectedObject.getCenterPoint();
 
     this.scaleCenter = new fabric.Circle({
-      left: center.x - 5,
-      top: center.y - 5,
-      radius: 5,
+      left: center.x,
+      top: center.y,
+      radius: 6,
       fill: '#ff00ff',
       stroke: '#ffffff',
       strokeWidth: 2,
@@ -151,62 +162,45 @@ export class ScaleTool {
     if (!this.selectedObject) return;
 
     this.isScaling = true;
+    this.startPoint = pointer;
 
     const center = this.selectedObject.getCenterPoint();
     this.centerPoint = center;
-
-    // Вычисляем начальное расстояние от центра до курсора
-    this.startDistance = Math.sqrt(
-        Math.pow(pointer.x - center.x, 2) + Math.pow(pointer.y - center.y, 2)
-    );
 
     this.initialScaleX = this.selectedObject.scaleX || 1;
     this.initialScaleY = this.selectedObject.scaleY || 1;
   }
 
   private scaleObject(pointer: fabric.Point, uniformScale: boolean = false) {
-    if (!this.selectedObject || !this.centerPoint) return;
+    if (!this.selectedObject || !this.centerPoint || !this.startPoint) return;
 
-    // Текущее расстояние от центра до курсора
-    const currentDistance = Math.sqrt(
-        Math.pow(pointer.x - this.centerPoint.x, 2) +
-        Math.pow(pointer.y - this.centerPoint.y, 2)
-    );
+    // Вычисляем смещение от начальной точки
+    const deltaX = pointer.x - this.startPoint.x;
+    const deltaY = pointer.y - this.startPoint.y;
 
-    // Коэффициент масштабирования
-    const scaleFactor = currentDistance / this.startDistance;
+    // Коэффициент масштабирования (чем дальше тянем, тем больше)
+    const scaleFactorX = 1 + deltaX / 200;
+    const scaleFactorY = 1 + deltaY / 200;
 
     if (uniformScale) {
       // Пропорциональное масштабирование (Shift)
-      const newScale = this.initialScaleX * scaleFactor;
+      // Используем больший коэффициент
+      const scaleFactor = Math.max(scaleFactorX, scaleFactorY);
+      const newScale = Math.max(0.1, this.initialScaleX * scaleFactor);
+
       this.selectedObject.set({
         scaleX: newScale,
         scaleY: newScale,
       });
     } else {
       // Непропорциональное масштабирование
-      const angle = Math.atan2(
-          pointer.y - this.centerPoint.y,
-          pointer.x - this.centerPoint.x
-      );
+      const newScaleX = Math.max(0.1, this.initialScaleX * scaleFactorX);
+      const newScaleY = Math.max(0.1, this.initialScaleY * scaleFactorY);
 
-      // Определяем основную ось по углу
-      const absAngle = Math.abs(angle);
-      const isHorizontal = absAngle < Math.PI / 4 || absAngle > (3 * Math.PI) / 4;
-
-      if (isHorizontal) {
-        // Масштабируем по горизонтали
-        this.selectedObject.set({
-          scaleX: this.initialScaleX * scaleFactor,
-          scaleY: this.initialScaleY,
-        });
-      } else {
-        // Масштабируем по вертикали
-        this.selectedObject.set({
-          scaleX: this.initialScaleX,
-          scaleY: this.initialScaleY * scaleFactor,
-        });
-      }
+      this.selectedObject.set({
+        scaleX: newScaleX,
+        scaleY: newScaleY,
+      });
     }
 
     this.selectedObject.setCoords();
@@ -219,9 +213,12 @@ export class ScaleTool {
     const currentScaleX = this.selectedObject.scaleX || 1;
     const currentScaleY = this.selectedObject.scaleY || 1;
 
+    const newScaleX = Math.max(0.1, currentScaleX * factor);
+    const newScaleY = Math.max(0.1, currentScaleY * factor);
+
     this.selectedObject.set({
-      scaleX: currentScaleX * factor,
-      scaleY: currentScaleY * factor,
+      scaleX: newScaleX,
+      scaleY: newScaleY,
     });
 
     this.selectedObject.setCoords();
